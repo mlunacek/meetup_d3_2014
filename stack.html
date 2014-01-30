@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<body>
+
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <style type="text/css">
+      .axis {stroke: #666666; stroke-width: 1px; fill: none; }
+      text {font-family: "Helvetica Neue", Helvetica, sans-serif; 
+        stroke: none; fill: #666666; }
+    </style>
+
+    <svg></svg>
+    <script>
+      //Width and height
+      var w = 500;
+      var h = 300;
+      var margin = {left: 20, right: 20, top: 20, bottom: 60};
+      var width = w - margin.left - margin.right;
+      var height = h - margin.top - margin.bottom;
+
+      var data = [
+                [ 5, 10, 22],
+                [ 4, 12, 28],
+                [ 2, 19, 32],
+                [ 7,  23, 35],
+                [ 23,  17, 43]
+            ];
+
+      var categories = ["Apples", "Bananas", "Grapes"];
+      var dataset =categories.map(function(dat,i){
+          console.log(dat, i);
+          return data.map(function(d,index){
+              console.log(index, d[i]);
+              return {x: index, y: d[i] };
+          })
+      });
+
+      //Set up stack method
+      var stack = d3.layout.stack();
+
+      //Data, stacked
+      stack(dataset);
+
+      //Set up scales
+      var xScale = d3.scale.ordinal()
+          .domain(d3.range(dataset[0].length))
+          .rangeRoundBands([0, width], 0.05);
+
+      var yScale = d3.scale.linear()
+          .domain([0,
+              d3.max(dataset, function(d) {
+                  return d3.max(d, function(d) {
+                      return d.y0 + d.y;
+                  });
+              })
+          ])
+          .range([height, 0]);
+
+      var xAxis = d3.svg.axis()
+          .scale(xScale)
+          .orient("bottom")
+
+      //Easy colors accessible via a 10-step ordinal scale
+      var colors = d3.scale.category20();
+    
+      //Create SVG element
+      var svg = d3.select("svg")
+                  .attr("width", w)
+                  .attr("height", h);
+
+      // Add a group for each row of data
+      var groups = svg.selectAll("g")
+          .data(dataset)
+          .enter()
+          .append("g")
+          .attr("transform","translate(" + [margin.left, margin.top] + ")")
+          .style("fill", function(d, i) {
+              return colors(i);
+          });
+
+      // Add a rect for each data value
+      var rects = groups.selectAll("rect")
+          .data(function(d) { return d; })
+          .enter()
+          .append("rect")
+          .attr("x", function(d, i) {
+              return xScale(i);
+          })
+          .attr("y", function(d) {
+            return yScale(d.y0 + d.y);
+          })
+          .attr("height", function(d) {
+            return height - yScale(d.y);
+          })
+          .attr("width", xScale.rangeBand());
+      // Add the x axis
+      svg.append("g").attr({
+        "class": "x axis",
+        "transform": "translate(" + [margin.left, height + margin.top] + ")"
+      }).call(xAxis);
+
+    </script>
+    
+</body>
+</html>
