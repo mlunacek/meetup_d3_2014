@@ -1,0 +1,86 @@
+{%- if extend -%}{% extends "base.html" %}{% endif %}
+{% block content %}
+<div id="vis{{id}}"></div>
+<script src="http://d3js.org/d3.v2.min.js"></script>
+<script type="text/javascript">
+var w = {{width}},
+h = {{height}};
+
+var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
+color = d3.scale.category10();
+
+var color = d3.scale.ordinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+
+var force = d3.layout.force()
+.gravity(0.05)
+.charge(function(d, i) { return i ? 0 : -2000; })
+.nodes(nodes)
+.size([w, h]);
+
+var root = nodes[0];
+root.radius = 0;
+root.fixed = true;
+
+force.start();
+
+var svg = d3.select("#vis{{id}}").append("svg:svg")
+.attr("width", w)
+.attr("height", h);
+
+svg.selectAll("circle")
+.data(nodes.slice(1))
+.enter().append("svg:circle")
+.attr("r", function(d) { return d.radius - 2; })
+.style("fill", function(d, i) { return color(i % 3); });
+
+force.on("tick", function(e) {
+var q = d3.geom.quadtree(nodes),
+  i = 0,
+  n = nodes.length;
+
+while (++i < n) {
+q.visit(collide(nodes[i]));
+}
+
+svg.selectAll("circle")
+  .attr("cx", function(d) { return d.x; })
+  .attr("cy", function(d) { return d.y; });
+});
+
+svg.on("mousemove", function() {
+var p1 = d3.svg.mouse(this);
+root.px = p1[0];
+root.py = p1[1];
+force.resume();
+});
+
+function collide(node) {
+var r = node.radius + 16,
+  nx1 = node.x - r,
+  nx2 = node.x + r,
+  ny1 = node.y - r,
+  ny2 = node.y + r;
+return function(quad, x1, y1, x2, y2) {
+if (quad.point && (quad.point !== node)) {
+  var x = node.x - quad.point.x,
+      y = node.y - quad.point.y,
+      l = Math.sqrt(x * x + y * y),
+      r = node.radius + quad.point.radius;
+  if (l < r) {
+    l = (l - r) / l * .5;
+    node.x -= x *= l;
+    node.y -= y *= l;
+    quad.point.x += x;
+    quad.point.y += y;
+  }
+}
+return x1 > nx2
+    || x2 < nx1
+    || y1 > ny2
+    || y2 < ny1;
+};
+}
+</script>
+{% endblock %}	
