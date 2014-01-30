@@ -1,9 +1,8 @@
 # Getting Started with D3 and the IPython Notebook
 
-You will need to install IPython if you don't already have it.  The easiest way is to download
-and install [CANOPY](https://www.enthought.com/downloads/), a free Python package.  Here are some instructions:
+You will need to install IPython if you don't already have it.  I recommend the [Anaconda](http://continuum.io/downloads) distribution.
 
-http://researchcomputing.github.io/Meetup-Fall-2013/python/getting_started.html
+Make sure you have the latest packages.  Follow the [instructions](http://ipython.org/install.html).
 
 Next download the contents of this repository
 
@@ -11,4 +10,8 @@ https://github.com/mlunacek/meetup_d3_2014/archive/master.zip
 
 and unzip this in a location where you'd like to work.
 
+Navigate to this location using your terminal (or CMD prompt for Windows) and type:
 
+		ipython notebook --pylab=inline
+
+You should be able to run the notebooks.
